@@ -1,5 +1,6 @@
 from random import randrange
 from city import get_city
+# from find_users import find_users
 import requests
 
 import vk_api
@@ -15,7 +16,7 @@ def write_msg(user_id, message):
     vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7),})
 
 parametr = {
-    'access_token': '3ff8b319bfca23cad51b27192c8f4a6a80657da721df1392ba003489a31043f857027c21864285dfd82ab',
+    'access_token': '427a7e0613e5ce3ed287a07d9e293dc20bb14ed38283cad05f42ab7d72021e819832d07b9c317b650f219',
     'v': '5.131',
     'has_photo': 1
 }
@@ -42,6 +43,7 @@ def find_users():
     response = requests.get(url, params=parametr)
     response_outfit = response.json()
     return response_outfit['response']['items']
+
 count = 0
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
@@ -56,13 +58,8 @@ for event in longpoll.listen():
 
             for city in get_city():
                 if request == city['title']:
-                    parametr['city'] = city['id']
-                    write_msg(user_id, "Возраст от:")
-
-            # for age_from in range(0, 100, 1):
-            #     if request == str(age_from):
-            #         parametr['age_from'] = age_from
-            #         write_msg(user_id, "Возраст до:")
+                    parametr['city'] = int(city['id'])
+                    write_msg(user_id, "Возраст?")
 
             for age_to in range(0, 100, 1):
                 if request == str(age_to):
@@ -80,14 +77,8 @@ for event in longpoll.listen():
                     write_msg(user_id, "Отлично! Показываем?)")
 
             if request == 'да':
-
-                # def find_users():
-                #     url = 'https://api.vk.com/method/users.search'
-                #     response = requests.get(url, params=parametr)
-                #     response_outfit = response.json()
-                #     return response_outfit['response']['items']
                 for i in find_users():
-                    write_msg(user_id, f"{i['id']}")
+                    write_msg(user_id, f"https://vk.com/id{i['id']}")
                     break
             elif request == 'дальше':
                 count += 1
@@ -95,8 +86,6 @@ for event in longpoll.listen():
                     if j == count:
                         write_msg(user_id, f"{find_users()[j]}")
 
-
-
-
-
+            elif request == 'стоп':
+                break
 

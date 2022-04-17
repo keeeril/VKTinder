@@ -5,7 +5,7 @@ def get_photo(ident):
     params = {
         'owner_id': ident,
         'album_id': 'wall',
-        'access_token': '3ff8b319bfca23cad51b27192c8f4a6a80657da721df1392ba003489a31043f857027c21864285dfd82ab',
+        'access_token': '427a7e0613e5ce3ed287a07d9e293dc20bb14ed38283cad05f42ab7d72021e819832d07b9c317b650f219',
         'v': '5.131',
         'rev': '1',
         'extended': 1
