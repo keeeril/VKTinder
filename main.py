@@ -2,6 +2,10 @@ from random import randrange
 from city import get_city
 from photos_get import get_photo
 import requests
+import sqlalchemy
+
+engine = sqlalchemy.create_engine('postgresql://kirill:123456@localhost:5432/kirill_database')
+connection = engine.connect()
 
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -50,7 +54,7 @@ def find_users():
     return response_outfit['response']['items']
 
 count = 0
-i = 1
+i = 0
 photo = {}
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
@@ -72,14 +76,15 @@ for event in longpoll.listen():
                 parametr['age_from'] = request
                 write_msg(user_id, "Возраст до:")
 
-            elif count == 3:
+            elif count == 3 and request > parametr['age_from']:
                 parametr['age_to'] = request
                 write_msg(user_id, "Какой пол?")
 
             for sex_noemr, sex in sexx.items():
                 if request == sex:
                     parametr['sex'] = sex_noemr
-                    write_msg(user_id, "Какое семейное положение?")
+                    write_msg(user_id, "Какое семейное положение? (холост,встречается,помолвлен,женат,\n"
+                                       "всё сложно,в активном поиске,влюблен,в гражданском браке)")
 
             for status_nomer, status in family_status.items():
                 if request == status:
@@ -88,32 +93,25 @@ for event in longpoll.listen():
 
             if request == 'да':
                 idd = find_users()[i]['id']
-                like = 0
-                s = 0
-                for q in get_photo(idd):
-                    # if q['likes']['count'] > like:
-                    like = q['likes']['count']
-                    for zz in q['sizes']:
-                        if zz['height'] > s:
-                            s = zz['height']
-                            url = zz['url']
-                            photo[like] = url
+                for url in get_photo(idd).values():
                     write_msg(user_id, f"{url}")
                 write_msg(user_id, f"https://vk.com/id{idd}")
+                write_msg(user_id, f"Если хотите продолжить поиск введите 'Дальше'")
+                sel_user = connection.execute("""SELECT * FROM users;""").fetchall()
+                user = f"https://vk.com/id{idd}"
+                for us in sel_user:
+                    if user != us[1]:
+                        connection.execute(f"INSERT INTO users(id_users) VALUES ('{user}')")
 
             elif request == 'дальше':
                 idd = find_users()[i]['id']
-                like = 0
-                s = 0
-                for q in get_photo(idd):
-                    like = q['likes']['count']
-                    for zz in q['sizes']:
-                        if zz['height'] > s:
-                            s = zz['height']
-                            url = zz['url']
-                            photo[like] = url
-                    write_msg(user_id, f"{photo[like]}")
+                for url in get_photo(idd).values():
+                    write_msg(user_id, f"{url}")
                 write_msg(user_id, f"https://vk.com/id{idd}")
-
+                sel_user = connection.execute("""SELECT * FROM users;""").fetchall()
+                user = f"https://vk.com/id{idd}"
+                for us in sel_user:
+                    if user != us[1]:
+                        connection.execute(f"INSERT INTO users(id_users) VALUES ('{user}')")
             count += 1
             i += 1
