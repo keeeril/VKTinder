@@ -1,8 +1,8 @@
 from random import randrange
-from city import get_city
 from photos_get import get_photo
 import requests
 import sqlalchemy
+from package.token import token, token_group
 
 engine = sqlalchemy.create_engine('postgresql://kirill:123456@localhost:5432/kirill_database')
 connection = engine.connect()
@@ -10,21 +10,11 @@ connection = engine.connect()
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-with open('/Users/keeeril/Desktop/Netology/Token/Token_group.txt', 'rt', encoding='utf-8') as file:
-    token_group = file.readline()
-
-with open('/Users/keeeril/Desktop/Netology/Token/Token_user.txt', 'rt', encoding='utf-8') as file:
-    token_user = file.readline()
-
 vk = vk_api.VkApi(token=token_group)
 longpoll = VkLongPoll(vk)
 
-
-def write_msg(user_id, message):
-    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7),})
-
 parametr = {
-    'access_token': token_user,
+    'access_token': token,
     'v': '5.131',
     'has_photo': 1,
     'count': 1000
@@ -53,6 +43,10 @@ def find_users():
     response_outfit = response.json()
     return response_outfit['response']['items']
 
+
+def write_msg(user_id, message):
+    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7),})
+
 count = 0
 i = 0
 photo = {}
@@ -69,7 +63,7 @@ for event in longpoll.listen():
                 write_msg(user_id, f"Хай, {user[0]['first_name']}, в каком городе ищем?")
 
             if count == 1:
-                parametr['city'] = get_city(request)['id']
+                parametr['hometown'] = request
                 write_msg(user_id, "Возраст от:")
 
             elif count == 2:

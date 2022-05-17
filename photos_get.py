@@ -1,15 +1,12 @@
 import requests
-from pprint import pprint
-
-with open('/Users/keeeril/Desktop/Netology/Token/Token_user.txt', 'rt', encoding='utf-8') as file:
-    token_user = file.readline()
+from package.token import token
 
 def get_photo(ident):
     url = 'https://api.vk.com/method/photos.get'
     params = {
         'owner_id': ident,
         'album_id': 'profile',
-        'access_token': token_user,
+        'access_token': token,
         'v': '5.131',
         'rev': '1',
         'extended': 1,
